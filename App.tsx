@@ -5,114 +5,83 @@
  * @format
  */
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import axios from 'axios';
+import React, { useEffect } from 'react';
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
+
   StyleSheet,
   Text,
-  useColorScheme,
   View,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+import { initializeSslPinning,addSslPinningErrorListener} from 'react-native-ssl-public-key-pinning';
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+
+const App = () => {
+  useEffect(() => {
+    const setupSslPinning = async () => {
+      try {
+        await initializeSslPinning({
+          'google.com': {
+            includeSubdomains: true,
+            publicKeyHashes: [
+              'CLOmM1/OXvSPjw5UOYbAf9GKOxImEp9hhku9W90fHMk=',
+              'hxqRlPTu1bMS/0DITB1SSu0vd4u/8l8TjPgfaAp63Gc=',
+              'Vfd95BwDeSQo+NUYxVEEIlvkOlWY2SalKK1lPhzOx78=',
+              'QXnt2YHvdHR3tJYmQIr0Paosp6t/nggsEGD4QJZ3Q0g=',
+              'mEflZT5enoR1FuXLgYYGqnVEoZvmf9c2bVBpiOjYQ0c=',
+            ],
+          },
+        });
+        console.log('SSL pinning initialized successfully');
+      } catch (error) {
+        console.error('Failed to initialize SSL pinning', error);
+      }
+    };
+
+    setupSslPinning();
+    // This request will have public key pinning enabled
+    const callApi = async() => {
+      try {
+      const response = await fetch('https://www.google.com');//await axios.get('https://www.google.com');
+      //console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+    }
+    callApi();
+  }, []);
+  useEffect(() => {
+    const subscription = addSslPinningErrorListener((error) => {
+      // Triggered when an SSL pinning error occurs due to pin mismatch
+      console.log(error.serverHostname);
+      console.log(error.message);
+    });
+    return () => {
+      subscription.remove();
+    };
+  }, []);
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
+    <View style={styles.container}>
+      <Text style={styles.text}>SSL Pinning Initialized!</Text>
     </View>
   );
-}
-
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-}
+};
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5FCFF',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+  text: {
+    fontSize: 20,
+    textAlign: 'center',
+    margin: 10,
   },
 });
+
 
 export default App;
