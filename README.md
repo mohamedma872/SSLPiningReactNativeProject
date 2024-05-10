@@ -1,79 +1,114 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# React Native SSL Pinning Example
 
-# Getting Started
+This is a sample React Native application that demonstrates how to implement SSL pinning using the `react-native-ssl-public-key-pinning` package.
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+## Introduction
 
-## Step 1: Start the Metro Server
+SSL pinning is a security feature that helps prevent man-in-the-middle attacks by validating the server's certificate against known hashes of the server's public key. This sample app sets up SSL pinning for requests to `google.com` and includes error handling for SSL pinning mismatches.
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
+## Prerequisites
 
-To start Metro, run the following command from the _root_ of your React Native project:
+Before you run this project, ensure you have the following installed:
 
-```bash
-# using npm
-npm start
+- Node.js
+- npm or Yarn
+- React Native CLI (if not using Expo)
+- An emulator or device to run a React Native app
 
-# OR using Yarn
-yarn start
-```
+## Installation
 
-## Step 2: Start your Application
+To get started with this project, clone the repository and install the dependencies:
 
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
+\`\`\`bash
+git clone https://github.com/your-username/react-native-ssl-pinning-example.git
+cd react-native-ssl-pinning-example
+npm install
+\`\`\`
 
-### For Android
+## Running the App
 
-```bash
-# using npm
-npm run android
+To run the app on an emulator or a physical device, use the following commands:
 
-# OR using Yarn
-yarn android
-```
+\`\`\`bash
+npx react-native run-android   # For Android
+npx react-native run-ios       # For iOS
+\`\`\`
 
-### For iOS
+## Key Features
 
-```bash
-# using npm
-npm run ios
+- **SSL Pinning Setup:** Initialize SSL pinning for `google.com` with multiple public key hashes.
+- **Error Handling:** Listen to SSL pinning errors and log them for debugging purposes.
+- **Network Request:** Example of a network request to `google.com` with SSL pinning applied.
 
-# OR using Yarn
-yarn ios
-```
+## Code Overview
 
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
+The main logic for setting up SSL pinning and making a secured request is in `App.js`. Here's a brief overview:
 
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
+### Initialize SSL Pinning
 
-## Step 3: Modifying your App
+SSL pinning is initialized in a `useEffect` hook when the app starts:
 
-Now that you have successfully run the app, let's modify it.
+\`\`\`javascript
+useEffect(() => {
+  const setupSslPinning = async () => {
+    try {
+      await initializeSslPinning({
+        'google.com': {
+          includeSubdomains: true,
+          publicKeyHashes: [
+            'CLOmM1/OXvSPjw5UOYbAf9GKOxImEp9hhku9W90fHMk=',
+            'hxqRlPTu1bMS/0DITB1SSu0vd4u/8l8TjPgfaAp63Gc=',
+            'Vfd95BwDeSQo+NUYxVEEIlvkOlWY2SalKK1lPhzOx78=',
+            'QXnt2YHvdHR3tJYmQIr0Paosp6t/nggsEGD4QJZ3Q0g=',
+            'mEflZT5enoR1FuXLgYYGqnVEoZvmf9c2bVBpiOjYQ0c=',
+          ],
+        },
+      });
+      console.log('SSL pinning initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize SSL pinning', error);
+    }
+  };
 
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
+  setupSslPinning();
+}, []);
+\`\`\`
 
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
+### Make a Secured Network Request
 
-## Congratulations! :tada:
+A network request to `google.com` with SSL pinning is made in the same `useEffect` hook:
 
-You've successfully run and modified your React Native App. :partying_face:
+\`\`\`javascript
+const callApi = async() => {
+  try {
+    const response = await fetch('https://www.google.com');
+  } catch (error) {
+    console.log(error);
+  }
+}
+callApi();
+\`\`\`
 
-### Now what?
+### Listen to SSL Pinning Errors
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
+Another `useEffect` hook is used to listen for any SSL pinning errors:
 
-# Troubleshooting
+\`\`\`javascript
+useEffect(() => {
+  const subscription = addSslPinningErrorListener((error) => {
+    console.log(error.serverHostname);
+    console.log(error.message);
+  });
+  return () => {
+    subscription.remove();
+  };
+}, []);
+\`\`\`
 
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+## Contributing
 
-# Learn More
+Feel free to fork this repository and submit pull requests to contribute to this project.
 
-To learn more about React Native, take a look at the following resources:
+## License
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+This project is licensed under the MIT License - see the LICENSE file for details.
